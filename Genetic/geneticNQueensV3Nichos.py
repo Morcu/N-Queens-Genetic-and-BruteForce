@@ -5,63 +5,86 @@ from copy import deepcopy
 import sys
 
 evaluaciones = 0
-n = 4
+n = 10
+BETA = 100
+soluciones = []
+generaciones = 0
 tamanoPoblacion = 100
-tasaMutacion = 0.1
+tasaMutacion = 0.2
 tamTorneo = 3
 def main():
-    
     global n
+    global BETA
     global tamanoPoblacion
     global tasaMutacion
     global tamTorneo
-    if(len(sys.argv) >= 5):
+    global generaciones
+    if(len(sys.argv) >= 7):
         if(sys.argv[1].isdigit()):
             n = int(sys.argv[1])
         if(sys.argv[2].isdigit()):
             tamanoPoblacion = int(sys.argv[2])
         if(sys.argv[3].isdigit()):
             tamTorneo = int(sys.argv[3])
-        
         tasaMutacion = float(sys.argv[4])
-    print('[N-Queens GA GeneticoBinarioV2]')
-    print('N:' + str(n) + ' Poblacion:' + str(tamanoPoblacion) + ' Torneo:' + str(tamTorneo) + ' Mutacion:' + str(tasaMutacion))
+        BETA = float(sys.argv[5])
+        if(sys.argv[6].isdigit()):
+            generaciones = int(sys.argv[6])
+    print('[N-Queens GA GeneticoModificado]')
+    print('N:' + str(n) + ' Poblacion:' + str(tamanoPoblacion) + ' Torneo:' + str(tamTorneo) + ' Mutacion:' + str(tasaMutacion)
+    + ' Beta:' + str(BETA) + ' Generaciones:' + str(generaciones))
+    
     poblacion = []
-    cromosoma = [0] * (n*n)
+    cromosoma = np.arange(n)
     puntuacionIndividuo = []
     start = 0
     end = 0
+    simil = 0.0
     for i in range(tamanoPoblacion):
-        for j in range(n):
-            start = j * n
-            end = ((j + 1) * n) - 1 
-            pos = randint(start, end)
-            cromosoma[pos] = 1        
+        cromosoma = range(n)
+        random.shuffle(cromosoma)
         poblacion.append(cromosoma)
-        cromosoma = [0] * (n*n)
+        
     contador = 0
 
-    while(True):
     
-
+    while(contador < generaciones):
+    #for i in range(3):
+        #hay que hacerlo para cada elemento en la poblacion
         for ind in poblacion:
             matriz = convertir(ind, n)
             queens = checkQueens(matriz)
             puntos = checkAttack(matriz, queens)
-            puntuacionIndividuo.append(puntos)
+            
+            simil = similitud(ind, poblacion)
+            puntuacionRefinada = puntos + BETA * simil
+            puntuacionIndividuo.append(puntuacionRefinada)
             if(puntos == 0):
                 suma = 0
-                
-                for i in matriz:
+                conv = convertir(ind,n)
+                for i in conv:
                     suma = suma + sum(i)
                     
                 if(suma == n):
+                    
                     global evaluaciones
-                    print(evaluaciones)
-                    print(convertSol(matriz))
-                    return
+                    
+                    global soluciones
+                    esta = False
+                    for sol in soluciones:
+                        if(sol == ind):
+                            esta = True
+                            break
+                    if(not(esta)):
+                        soluciones.append(ind)
+                        print(evaluaciones)
+                        evaluaciones = 0
+                        print(ind)
+                    ind = range(n)
+                    random.shuffle(ind)
+                    #return
         #print(media(puntuacionIndividuo))
-        nuevaPoblacion = torneo(poblacion, puntuacionIndividuo, tamTorneo , tamanoPoblacion)
+        nuevaPoblacion = torneo(poblacion, puntuacionIndividuo, tamTorneo, tamanoPoblacion)
         #print(len(nuevaPoblacion))
         
         poblacionFinal = cruce(nuevaPoblacion, (n))
@@ -73,13 +96,6 @@ def main():
         #print('---------------')
         poblacion = deepcopy(poblacionMutada)
 
-
-    #print(poblacionMutada)
-def convertSol(sol):
-    salida = []
-    for i in sol:
-        salida.append(i.index(1))
-    return salida
 
 def diff(first, second):
         second = set(second)
@@ -93,8 +109,16 @@ def media(puntos):
     return sum/len(puntos)
 
 #Convierte el genotipo en fenotipo
-def convertir(l, n):
-    return([l[i:i + n] for i in range(0, len(l), n)])
+def convertir(queen, n):
+    l = [0] * (n*n)
+    matrx = ([l[i:i + n] for i in range(0, len(l), n)])
+    for i in range(len(queen)):
+        matrx[i][queen[i]] = 1
+    '''print(queen)
+    print(matrx)
+    print('-------')
+    '''
+    return matrx
 
 #devuelve la posicion de las reinas dado un tablero
 def checkQueens(matrix):
@@ -155,6 +179,19 @@ def checkAttack(Matrix, queens):
 
 
 
+#calcula la similitud de un individuo con la poblacion
+def similitud(individuo, poblacion):
+    global n
+    sim = 0.0
+    valorDev = 0.0
+    for indvPoblacion in poblacion:
+        for i in range(n):
+            if(indvPoblacion[i] == individuo[i]):
+                
+                sim = sim + 1
+    sim = sim - n
+    valorDev = sim/((len(poblacion) - 1) * n)
+    return valorDev
 #elegir aleatoriamente k individuos y quedarte con el que menor puntuacion tenga hasta llenar una 
 #poblacion nueva del mismo tamano de la de origen
 def torneo(poblacion, puntos, k, tamanoPoblacion):
@@ -178,13 +215,12 @@ def torneo(poblacion, puntos, k, tamanoPoblacion):
 def cruce(poblacion, n):
     poblacionCruzada = []
     for i,k in zip(poblacion[0::2], poblacion[1::2]):
-        posCorte = randint(1, n-1)
-        corte = (posCorte * n)  
+        corte = randint(1, n-1)
         p1 = i[:corte]
         p2 = i[corte:]
         p3 = k[:corte]
         p4 = k[corte:]
-
+       
         h1 = p1 + p4
         h2 = p3 + p2
         poblacionCruzada.append(h1)
@@ -197,18 +233,13 @@ def mutacion(poblacion, tasaMutacion, n):
         rand = random.uniform(0, 1)
         if(rand <= tasaMutacion):
             #print('_MUTA_')
-            '''
-            elegir subconjunto aleatorio
-            elegir 2 valores aleatorios en el rango del subconjunto
-            intercambiar esos valores 
-            '''
-            pos = randint(1, n-1)
-            topSubconjunto = (pos * n)
-            endSubconjunto = (topSubconjunto + n) - 1
-            pos1, pos2 = aleatorios(topSubconjunto, endSubconjunto)
-            aux = item[pos1]
-            item[pos1] = item[pos2]
-            item[pos2] = aux
+            
+            pos = randint(0, n-1)
+            while(True):   
+                num = randint(0, n-1)
+                if(item[pos] != num):
+                    break
+            item[pos] = num
             poblacionMutada.append(item)
         else:
             poblacionMutada.append(item)

@@ -2,13 +2,32 @@ from random import randint
 import random
 import numpy as np
 from copy import deepcopy
+import sys
 
 n = 4
+tamanoPoblacion = 100
+tasaMutacion = 0.1
+tamTorneo = 3
+evaluaciones = 0
 def main():
+    global n
+    global tamanoPoblacion
+    global tasaMutacion
+    global tamTorneo
+    if(len(sys.argv) >= 5):
+        if(sys.argv[1].isdigit()):
+            n = int(sys.argv[1])
+        if(sys.argv[2].isdigit()):
+            tamanoPoblacion = int(sys.argv[2])
+        if(sys.argv[3].isdigit()):
+            tamTorneo = int(sys.argv[3])
+        
+        tasaMutacion = float(sys.argv[4])
+    
+    print('[N-Queens GA GeneticoBinario]')
+    print('N:' + str(n) + ' Poblacion:' + str(tamanoPoblacion) + ' Torneo:' + str(tamTorneo) + ' Mutacion:' + str(tasaMutacion))
     poblacion = []
     cromosoma = []
-    tamanoPoblacion = 100
-    tasaMutacion = 0.4
     puntuacionIndividuo = []
     for i in range(tamanoPoblacion):
         for i in range(0, n*n):
@@ -28,19 +47,18 @@ def main():
             puntuacionIndividuo.append(puntos)
             if(puntos == 0):
                 suma = 0
-                conv = convertir(ind,n)
-                for i in conv:
+                #conv = convertir(ind,n)
+                for i in matriz:
                     suma = suma + sum(i)
                     
                 if(suma == n):
-                    print('_stop_')
+                    global evaluaciones
+                    print(evaluaciones)
+                    print(convertSol(matriz))
                     
-                    print(contador)
-                    for i in conv:
-                        print(i)
                     return
         #print(media(puntuacionIndividuo))
-        nuevaPoblacion = torneo(poblacion, puntuacionIndividuo, 3 , tamanoPoblacion)
+        nuevaPoblacion = torneo(poblacion, puntuacionIndividuo, tamTorneo, tamanoPoblacion)
         #print(len(nuevaPoblacion))
         
         poblacionFinal = cruce(nuevaPoblacion, (n*n))
@@ -54,6 +72,12 @@ def main():
 
 
     #print(poblacionMutada)
+
+def convertSol(sol):
+    salida = []
+    for i in sol:
+        salida.append(i.index(1))
+    return salida
 
 def diff(first, second):
         second = set(second)
@@ -82,6 +106,8 @@ def checkQueens(matrix):
 #Calculo del fitnes
 #para cada reina comprobar si ataca a alguna otra reina
 def checkAttack(Matrix, queens):
+    global evaluaciones
+    evaluaciones = evaluaciones + 1
     attack = 0
     for queen in queens:
         #horizontal

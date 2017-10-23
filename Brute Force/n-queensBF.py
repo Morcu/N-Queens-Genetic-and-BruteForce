@@ -1,10 +1,16 @@
 import copy
-
+import sys
 n = 10
 global Matrix
-q = 9
+evals = 0
 
 def main():
+    global n
+    if(len(sys.argv) >= 2):
+        if(sys.argv[1].isdigit()):
+            n = int(sys.argv[1])
+    print('[N-Queens GA FuerzaBruta]')
+    print('N: ' + str(n))
     #Genera la matriz de N x N
     global Matrix 
     Matrix= [[0 for x in range(n)] for y in range(n)] 
@@ -13,12 +19,12 @@ def main():
     Result = []
 
     recursive_solver(Matrix, 0)
-    print('FIN')
-    print(len(Result))
+   
     
 #Se comprueba si puede ponerse o no la reina
 def setQueen(x, y, Matrix):
-    
+    global evals
+    evals = evals + 1
     #horizontal
     for i in range(len(Matrix[x])):
         if(Matrix[x][i] == 1):
@@ -60,12 +66,23 @@ def recursive_solver(matrix, col):
             if col == n - 1:
                 solucion = saved_board = copy.deepcopy(matrix)
                 Result.append(solucion)
+                global evals
+                print(evals)
+                print(convertSol(solucion))
+                
+                evals = 0
                 matrix[x][col] = 0
                 return
             recursive_solver(matrix, col + 1)
             
             #Si hay que aplicar backtracking, se puede aplicar poniendo esa reina a 0 y siguiendo con el algoritmo
             matrix[x][col] = 0
+
+def convertSol(sol):
+    salida = []
+    for i in sol:
+        salida.append(i.index(1))
+    return salida
 
 if __name__ == '__main__':
     main()
