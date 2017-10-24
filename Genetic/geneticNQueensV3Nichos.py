@@ -48,7 +48,8 @@ def main():
     contador = 0
 
     
-    while(contador < generaciones):
+    #while(contador < generaciones):
+    while(True):
     #for i in range(3):
         #hay que hacerlo para cada elemento en la poblacion
         for ind in poblacion:
@@ -77,9 +78,10 @@ def main():
                             break
                     if(not(esta)):
                         soluciones.append(ind)
+                        
+                        print(ind)
                         print(evaluaciones)
                         evaluaciones = 0
-                        print(ind)
                     ind = range(n)
                     random.shuffle(ind)
                     #return

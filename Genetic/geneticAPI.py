@@ -3,14 +3,15 @@ import random
 import numpy as np
 from copy import deepcopy
 import requests
-API = 'http://memento.evannai.inf.uc3m.es/age/test?c='
+API = 'http://memento.evannai.inf.uc3m.es/age/smile?c='
 n = 8
 ciclos = 200
 evaluaciones = 0
 def main():
+    
     poblacion = []
     cromosoma = []
-    tamanoPoblacion = 100
+    tamanoPoblacion = 10
     tasaMutacion = 0.2
     puntuacionIndividuo = []
     for i in range(tamanoPoblacion):
@@ -22,7 +23,7 @@ def main():
     minimo = []
     minimoCadena = []
     global ciclos
-    while(contador < ciclos):
+    while(True):
     
     #for i in range(3):
         #hay que hacerlo para cada elemento en la poblacion
@@ -72,6 +73,7 @@ def obtenerPuntuacion(individuo):
     global evaluaciones
     evaluaciones = evaluaciones + 1
     global API
+    
     return float(requests.get(API + ''.join(str(x) for x in individuo)).text)
 
 

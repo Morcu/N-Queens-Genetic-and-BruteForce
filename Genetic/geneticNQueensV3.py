@@ -56,8 +56,9 @@ def main():
                     
                 if(suma == n):
                     global evaluaciones
-                    print(evaluaciones)
+                    
                     print(ind)
+                    print(evaluaciones)
                     return
         #print(media(puntuacionIndividuo))
         nuevaPoblacion = torneo(poblacion, puntuacionIndividuo, tamTorneo, tamanoPoblacion)
